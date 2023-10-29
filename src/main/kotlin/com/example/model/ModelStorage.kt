@@ -23,9 +23,15 @@ object ModelStorage {
         _users.remove(user)
     }
 
-//    fun ad(user: User) {
-//        _users.add(user.copy(id = ++userInserts))
-//    }
+    fun addCategory(category: Category) {
+        _categories.add(category.copy(id = ++categoriesInserts))
+    }
+
+    fun deleteCategory(id: Int) {
+        val category = _categories.find { it.id == id }!!
+        _categories.remove(category)
+    }
+
 
 
 }

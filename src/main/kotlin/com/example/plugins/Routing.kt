@@ -1,5 +1,6 @@
 package com.example.plugins
 
+import com.example.model.Category
 import com.example.model.ModelStorage
 import com.example.model.User
 import io.ktor.http.*
@@ -11,7 +12,7 @@ import io.ktor.server.routing.*
 fun Application.configureRouting() {
     routing {
         userRouting()
-
+        categoryRouting()
     }
 }
 
@@ -33,4 +34,22 @@ fun Routing.userRouting() {
     get("/users") {
         call.respond(ModelStorage.users)
     }
+}
+
+fun Routing.categoryRouting() {
+    get("/category/{id}") {
+        val id = call.parameters["id"]!!.toInt()
+        call.respond(ModelStorage.categories.first { it.id == id })
+    }
+    delete("/category/{id}") {
+        val id = call.parameters["id"]!!.toInt()
+        ModelStorage.deleteUser(id)
+        call.respond(HttpStatusCode.OK, "category $id successfully deleted")
+    }
+    post("/category") {
+        val category = call.receive<Category>()
+        ModelStorage.addCategory(category)
+        call.respond(HttpStatusCode.OK, "category successfully added")
+    }
+
 }
