@@ -1,6 +1,7 @@
 package com.example.plugins
 
 import com.example.model.Category
+import com.example.model.Expense
 import com.example.model.ModelStorage
 import com.example.model.User
 import io.ktor.http.*
@@ -13,6 +14,7 @@ fun Application.configureRouting() {
     routing {
         userRouting()
         categoryRouting()
+        recordRouting()
     }
 }
 
@@ -43,13 +45,48 @@ fun Routing.categoryRouting() {
     }
     delete("/category/{id}") {
         val id = call.parameters["id"]!!.toInt()
-        ModelStorage.deleteUser(id)
+        ModelStorage.deleteCategory(id)
         call.respond(HttpStatusCode.OK, "category $id successfully deleted")
     }
     post("/category") {
         val category = call.receive<Category>()
         ModelStorage.addCategory(category)
         call.respond(HttpStatusCode.OK, "category successfully added")
+    }
+
+}
+
+fun Routing.recordRouting() {
+    get("/record/{id}") {
+        val id = call.parameters["id"]!!.toInt()
+        call.respond(ModelStorage.expenses.first { it.id == id })
+    }
+
+    delete("/record/{id}") {
+        val id = call.parameters["id"]!!.toInt()
+        ModelStorage.deleteRecord(id)
+        call.respond(HttpStatusCode.OK, "expense $id successfully deleted")
+    }
+
+    post("/record") {
+        val record = call.receive<Expense>()
+        ModelStorage.addRecord(record)
+        call.respond(HttpStatusCode.OK, "expense successfully added")
+    }
+
+    get("/records") {
+        val userId = call.parameters["user_id"]?.toInt()
+        val categoryId = call.parameters["category_id"]?.toInt()
+        if (userId == null && categoryId == null) {
+            call.respond(HttpStatusCode.BadRequest, "At least user id or category id needs to be passed")
+        } else {
+            val filteredExpenses = ModelStorage
+                .expenses
+                .filter { it.userId == userId || userId == null }
+                .filter { it.categoryId == categoryId || categoryId == null }
+            call.respond(filteredExpenses)
+        }
+
     }
 
 }

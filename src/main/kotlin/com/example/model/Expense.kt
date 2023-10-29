@@ -1,6 +1,7 @@
 package com.example.model
 
 import kotlinx.serialization.SerialName
+import java.time.LocalDateTime
 
 @kotlinx.serialization.Serializable
 data class Expense(
@@ -9,6 +10,6 @@ data class Expense(
     val userId: Int,
     @SerialName("category_id")
     val categoryId: Int,
-    val timestamp: String,
+    val timestamp: String = LocalDateTime.now().toString(),
     val sum: Double
 )

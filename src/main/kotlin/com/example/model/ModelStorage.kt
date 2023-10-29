@@ -32,6 +32,13 @@ object ModelStorage {
         _categories.remove(category)
     }
 
+    fun addRecord(record: Expense) {
+        _expenses.add(record.copy(id = ++expensesInserts))
+    }
 
+    fun deleteRecord(id: Int) {
+        val record = _expenses.find { it.id == id }!!
+        _expenses.remove(record)
+    }
 
 }
