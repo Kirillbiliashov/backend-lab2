@@ -1,9 +1,6 @@
 package com.example.plugins
 
-import com.example.model.Category
-import com.example.model.Expense
-import com.example.model.ModelStorage
-import com.example.model.User
+import com.example.model.*
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.request.*
@@ -36,8 +33,8 @@ fun Routing.userRouting() {
     }
     post("/user") {
         val user = call.receive<User>()
-        userStorage.add(user)
-        call.respond(HttpStatusCode.OK, "user successfully added")
+        val id = userStorage.add(user)
+        call.respond(IdBody(id))
     }
     get("/users") {
         call.respond(userStorage.values())
@@ -56,8 +53,8 @@ fun Routing.categoryRouting() {
     }
     post("/category") {
         val category = call.receive<Category>()
-        categoryStorage.add(category)
-        call.respond(HttpStatusCode.OK, "category successfully added")
+        val id = categoryStorage.add(category)
+        call.respond(IdBody(id))
     }
 
 }
@@ -76,8 +73,8 @@ fun Routing.recordRouting() {
 
     post("/record") {
         val record = call.receive<Expense>()
-        expenseStorage.add(record)
-        call.respond(HttpStatusCode.OK, "expense successfully added")
+        val id = expenseStorage.add(record)
+        call.respond(IdBody(id))
     }
 
     get("/records") {

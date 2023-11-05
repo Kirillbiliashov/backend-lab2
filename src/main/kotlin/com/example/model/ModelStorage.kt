@@ -7,8 +7,9 @@ class ModelStorage<T> where T: IdCopyable<T> {
 
     fun values() = _values.toList()
 
-    fun add(entry: T) {
+    fun add(entry: T): Int {
         _values.add(entry.copy(++inserts))
+        return inserts
     }
 
 
