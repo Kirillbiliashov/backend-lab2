@@ -1,4 +1,6 @@
 package com.example.model
 
 @kotlinx.serialization.Serializable
-data class User(val id: Int, val name: String)
+data class User(override val id: Int = 0, val name: String) : IdCopyable<User>() {
+    override fun copy(newId: Int) = copy(id = newId)
+}

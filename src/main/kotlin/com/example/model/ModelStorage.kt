@@ -1,44 +1,32 @@
 package com.example.model
 
-object ModelStorage {
+class ModelStorage<T> where T: IdCopyable<T> {
 
-    private var userInserts = 0
-    private var categoriesInserts = 0
-    private var expensesInserts = 0
+    private var inserts = 0
+    private var _values = mutableListOf<T>()
 
-    private var _users = mutableListOf<User>()
-    private var _expenses = mutableListOf<Expense>()
-    private var _categories = mutableListOf<Category>()
+    fun values() = _values.toList()
 
-    val users: List<User> = _users
-    val expenses: List<Expense> = _expenses
-    val categories: List<Category> = _categories
-
-    fun addUser(user: User) {
-        _users.add(user.copy(id = ++userInserts))
+    fun add(entry: T) {
+        _values.add(entry.copy(++inserts))
     }
 
-    fun deleteUser(id: Int) {
-        val user = _users.find { it.id == id }!!
-        _users.remove(user)
+
+    fun delete(id: Int) {
+        val record = _values.find { it.id == id }
+        _values.remove(record)
     }
 
-    fun addCategory(category: Category) {
-        _categories.add(category.copy(id = ++categoriesInserts))
-    }
+    fun get(id: Int) = _values.first { it.id == id }
 
-    fun deleteCategory(id: Int) {
-        val category = _categories.find { it.id == id }!!
-        _categories.remove(category)
-    }
-
-    fun addRecord(record: Expense) {
-        _expenses.add(record.copy(id = ++expensesInserts))
-    }
-
-    fun deleteRecord(id: Int) {
-        val record = _expenses.find { it.id == id }!!
-        _expenses.remove(record)
-    }
 
 }
+
+@kotlinx.serialization.Serializable
+sealed class IdCopyable<T> {
+
+    abstract val id: Int
+    abstract fun copy(newId: Int): T
+}
+
+

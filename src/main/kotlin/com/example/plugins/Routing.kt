@@ -10,6 +10,10 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
+private val userStorage = ModelStorage<User>()
+private val expenseStorage = ModelStorage<Expense>()
+private val categoryStorage = ModelStorage<Category>()
+
 fun Application.configureRouting() {
     routing {
         userRouting()
@@ -18,39 +22,41 @@ fun Application.configureRouting() {
     }
 }
 
+
 fun Routing.userRouting() {
     get("/user/{id}") {
         val id = call.parameters["id"]!!.toInt()
-        call.respond(ModelStorage.users.first { it.id == id })
+        call.respond(userStorage.get(id))
     }
+
     delete("/user/{id}") {
         val id = call.parameters["id"]!!.toInt()
-        ModelStorage.deleteUser(id)
+        userStorage.delete(id)
         call.respond(HttpStatusCode.OK, "user $id successfully deleted")
     }
     post("/user") {
         val user = call.receive<User>()
-        ModelStorage.addUser(user)
+        userStorage.add(user)
         call.respond(HttpStatusCode.OK, "user successfully added")
     }
     get("/users") {
-        call.respond(ModelStorage.users)
+        call.respond(userStorage.values())
     }
 }
 
 fun Routing.categoryRouting() {
     get("/category/{id}") {
         val id = call.parameters["id"]!!.toInt()
-        call.respond(ModelStorage.categories.first { it.id == id })
+        call.respond(categoryStorage.get(id))
     }
     delete("/category/{id}") {
         val id = call.parameters["id"]!!.toInt()
-        ModelStorage.deleteCategory(id)
+        categoryStorage.delete(id)
         call.respond(HttpStatusCode.OK, "category $id successfully deleted")
     }
     post("/category") {
         val category = call.receive<Category>()
-        ModelStorage.addCategory(category)
+        categoryStorage.add(category)
         call.respond(HttpStatusCode.OK, "category successfully added")
     }
 
@@ -59,18 +65,18 @@ fun Routing.categoryRouting() {
 fun Routing.recordRouting() {
     get("/record/{id}") {
         val id = call.parameters["id"]!!.toInt()
-        call.respond(ModelStorage.expenses.first { it.id == id })
+        call.respond(expenseStorage.get(id))
     }
 
     delete("/record/{id}") {
         val id = call.parameters["id"]!!.toInt()
-        ModelStorage.deleteRecord(id)
+        expenseStorage.delete(id)
         call.respond(HttpStatusCode.OK, "expense $id successfully deleted")
     }
 
     post("/record") {
         val record = call.receive<Expense>()
-        ModelStorage.addRecord(record)
+        expenseStorage.add(record)
         call.respond(HttpStatusCode.OK, "expense successfully added")
     }
 
@@ -80,8 +86,7 @@ fun Routing.recordRouting() {
         if (userId == null && categoryId == null) {
             call.respond(HttpStatusCode.BadRequest, "At least user id or category id needs to be passed")
         } else {
-            val filteredExpenses = ModelStorage
-                .expenses
+            val filteredExpenses = expenseStorage.values()
                 .filter { it.userId == userId || userId == null }
                 .filter { it.categoryId == categoryId || categoryId == null }
             call.respond(filteredExpenses)
