@@ -1,5 +1,9 @@
-package com.example.db.orm
+package com.example.db
 
+import com.example.db.orm.Categories
+import com.example.db.orm.Currencies
+import com.example.db.orm.Expenses
+import com.example.db.orm.Users
 import kotlinx.coroutines.Dispatchers
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils

@@ -8,6 +8,6 @@ object Expenses: Table() {
     val categoryId = integer("categoryId").references(Categories.id)
     val timestamp = long("timestamp")
     val sum = double("sum")
+    val currencyId = integer("currencyId").references(Currencies.id)
     override val primaryKey = PrimaryKey(id)
 }
-//"jdbc:mysql://localhost:3306/your_database"

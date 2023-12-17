@@ -1,6 +1,6 @@
 package com.example
 
-import com.example.db.orm.DbSingleton
+import com.example.db.DbSingleton
 import com.example.plugins.*
 import io.ktor.server.application.*
 import io.ktor.server.engine.*

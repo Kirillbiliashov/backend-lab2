@@ -1,5 +1,9 @@
 package com.example.plugins
 
+import com.example.db.dao.CategoriesDaoImpl
+import com.example.db.dao.CurrenciesDaoImpl
+import com.example.db.dao.ExpensesDaoImpl
+import com.example.db.dao.UsersDaoImpl
 import com.example.model.*
 import io.ktor.http.*
 import io.ktor.server.application.*
@@ -10,15 +14,11 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
-private val currencyStorage = ModelStorage<Currency>(
-    listOf(
-        Currency(name = "USD", country = "USA"),
-        Currency(name = "EUR", country = "EU")
-    )
-)
-private val userStorage = ModelStorage<User>()
-private val expenseStorage = ModelStorage<Expense>()
-private val categoryStorage = ModelStorage<Category>()
+
+private val currenciesDao = CurrenciesDaoImpl()
+private val usersDao = UsersDaoImpl()
+private val categoriesDao = CategoriesDaoImpl()
+private val expensesDao = ExpensesDaoImpl()
 
 fun Application.configureRouting() {
     routing {
@@ -51,7 +51,7 @@ fun Application.configureRouting() {
         validate<Currency> { currency ->
             val reasons = mutableListOf<String>()
             if (currency.country.length <= 2) reasons.add("Currency country should be valid")
-            if (currency.name.length <= 3) reasons.add("Currency name should be valid")
+            if (currency.name.length < 3) reasons.add("Currency name should be valid")
             if (reasons.isNotEmpty()) ValidationResult.Invalid(reasons)
             else ValidationResult.Valid
         }
@@ -70,37 +70,41 @@ fun Application.configureRouting() {
 fun Routing.userRouting() {
     get("/user/{id}") {
         val id = call.parameters["id"]!!.toInt()
-        call.respond(userStorage.get(id))
+        val user = usersDao.get(id)
+        if (user == null) call.respond(HttpStatusCode.NotFound)
+        else call.respond(HttpStatusCode.OK, user)
     }
 
     delete("/user/{id}") {
         val id = call.parameters["id"]!!.toInt()
-        userStorage.delete(id)
-        call.respond(HttpStatusCode.OK, "user $id successfully deleted")
+        usersDao.delete(id)
+        call.respond(HttpStatusCode.NoContent, "user $id successfully deleted")
     }
     post("/user") {
         val user = call.receive<User>()
-        val id = userStorage.add(user)
+        val id = usersDao.insert(user)
         call.respond(IdBody(id))
     }
     get("/users") {
-        call.respond(userStorage.values())
+        call.respond(usersDao.getAll())
     }
 }
 
 fun Routing.categoryRouting() {
     get("/category/{id}") {
         val id = call.parameters["id"]!!.toInt()
-        call.respond(categoryStorage.get(id))
+        val category = categoriesDao.get(id)
+        if (category == null) call.respond(HttpStatusCode.NotFound)
+        else call.respond(HttpStatusCode.OK, category)
     }
     delete("/category/{id}") {
         val id = call.parameters["id"]!!.toInt()
-        categoryStorage.delete(id)
-        call.respond(HttpStatusCode.OK, "category $id successfully deleted")
+        categoriesDao.delete(id)
+        call.respond(HttpStatusCode.NoContent)
     }
     post("/category") {
         val category = call.receive<Category>()
-        val id = categoryStorage.add(category)
+        val id = categoriesDao.insert(category)
         call.respond(IdBody(id))
     }
 
@@ -109,19 +113,21 @@ fun Routing.categoryRouting() {
 fun Routing.currencyRouting() {
     get("/currency/{id}") {
         val id = call.parameters["id"]!!.toInt()
-        call.respond(currencyStorage.get(id))
+        val currency = currenciesDao.get(id)
+        if (currency == null) call.respond(HttpStatusCode.NotFound)
+        else call.respond(HttpStatusCode.OK, currency)
     }
     delete("/currency/{id}") {
         val id = call.parameters["id"]!!.toInt()
         if (id <= 2) call.respond(HttpStatusCode.BadRequest, "Can't delete default currency")
         else {
-            currencyStorage.delete(id)
-            call.respond(HttpStatusCode.OK, "category $id successfully deleted")
+            currenciesDao.delete(id)
+            call.respond(HttpStatusCode.NoContent, "category $id successfully deleted")
         }
     }
     post("/currency") {
         val currency = call.receive<Currency>()
-        val id = currencyStorage.add(currency)
+        val id = currenciesDao.insert(currency)
         call.respond(IdBody(id))
     }
 
@@ -130,18 +136,20 @@ fun Routing.currencyRouting() {
 fun Routing.recordRouting() {
     get("/record/{id}") {
         val id = call.parameters["id"]!!.toInt()
-        call.respond(expenseStorage.get(id))
+        val expense = expensesDao.get(id)
+        if (expense == null) call.respond(HttpStatusCode.NotFound)
+        else call.respond(HttpStatusCode.OK, expense)
     }
 
     delete("/record/{id}") {
         val id = call.parameters["id"]!!.toInt()
-        expenseStorage.delete(id)
-        call.respond(HttpStatusCode.OK, "expense $id successfully deleted")
+        expensesDao.delete(id)
+        call.respond(HttpStatusCode.NoContent)
     }
 
     post("/record") {
         val record = call.receive<Expense>()
-        val id = expenseStorage.add(record)
+        val id = expensesDao.insert(record)
         call.respond(IdBody(id))
     }
 
@@ -151,12 +159,8 @@ fun Routing.recordRouting() {
         if (userId == null && categoryId == null) {
             call.respond(HttpStatusCode.BadRequest, "At least user id or category id needs to be passed")
         } else {
-            val filteredExpenses = expenseStorage.values()
-                .filter { it.userId == userId || userId == null }
-                .filter { it.categoryId == categoryId || categoryId == null }
-            call.respond(filteredExpenses)
+            call.respond(expensesDao.getQuery(userId, categoryId))
         }
-
     }
 
 }
