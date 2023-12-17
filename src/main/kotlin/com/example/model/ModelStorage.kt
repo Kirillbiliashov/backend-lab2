@@ -5,6 +5,14 @@ class ModelStorage<T> where T: IdCopyable<T> {
     private var inserts = 0
     private var _values = mutableListOf<T>()
 
+    constructor() {}
+
+    constructor(models: List<T>) {
+        for (model in models) {
+            _values.add(model)
+        }
+    }
+
     fun values() = _values.toList()
 
     fun add(entry: T): Int {

@@ -11,7 +11,8 @@ data class Expense(
     @SerialName("category_id")
     val categoryId: Int,
     val timestamp: String = LocalDateTime.now().toString(),
-    val sum: Double
+    val sum: Double,
+    val currencyId: Int = 1
 ): IdCopyable<Expense>() {
     override fun copy(newId: Int) = copy(id = newId)
 }
