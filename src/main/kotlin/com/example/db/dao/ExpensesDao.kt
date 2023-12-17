@@ -9,19 +9,14 @@ import com.example.model.User
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 
-interface ExpensesDao {
-    suspend fun insert(expense: Expense): Int
-
-    suspend fun delete(id: Int)
-
-    suspend fun get(id: Int): Expense?
+interface ExpensesDao: Dao<Expense> {
 
     suspend fun getQuery(userId: Int?, categoryId: Int?): List<Expense>
 }
 
 class ExpensesDaoImpl: ExpensesDao {
 
-    private fun resultRowToExpense(row: ResultRow): Expense = Expense(
+    override fun resultRowToEntity(row: ResultRow): Expense = Expense(
         id = row[Expenses.id],
         userId = row[Expenses.userId],
         categoryId = row[Expenses.categoryId],
@@ -48,24 +43,26 @@ class ExpensesDaoImpl: ExpensesDao {
 
     override suspend fun get(id: Int) = dbQuery {
         Expenses.select { Expenses.id eq id }
-            .mapNotNull(::resultRowToExpense)
+            .mapNotNull(::resultRowToEntity)
             .singleOrNull()
     }
+
+    override suspend fun getAll() = emptyList<Expense>()
 
     override suspend fun getQuery(userId: Int?, categoryId: Int?) = dbQuery {
         if (userId == null) {
             Expenses.select {
                 Expenses.categoryId eq categoryId!!
-            }.map(::resultRowToExpense)
-        }
-        if (categoryId == null) {
+            }.map(::resultRowToEntity)
+        } else if (categoryId == null) {
             Expenses.select {
-                Expenses.userId eq userId!!
-            }.map(::resultRowToExpense)
+                Expenses.userId eq userId
+            }.map(::resultRowToEntity)
+        } else {
+            Expenses.select {
+                (Expenses.userId eq userId) and (Expenses.categoryId eq categoryId)
+            }.map(::resultRowToEntity)
         }
-        Expenses.select {
-            (Expenses.userId eq userId!!) and (Expenses.categoryId eq categoryId!!)
-        }.map(::resultRowToExpense)
     }
 
 }

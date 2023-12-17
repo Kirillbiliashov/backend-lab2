@@ -18,9 +18,9 @@ interface CurrenciesDao {
     suspend fun get(id: Int): Currency?
 }
 
-class CurrenciesDaoImpl: CurrenciesDao {
+class CurrenciesDaoImpl: Dao<Currency> {
 
-    private fun resultRowToCurrency(row: ResultRow): Currency = Currency(
+    override fun resultRowToEntity(row: ResultRow): Currency = Currency(
         id = row[Currencies.id],
         name = row[Currencies.name],
         country = row[Currencies.country]
@@ -42,8 +42,10 @@ class CurrenciesDaoImpl: CurrenciesDao {
 
     override suspend fun get(id: Int) = dbQuery {
         Currencies.select { Currencies.id eq id }
-            .mapNotNull(::resultRowToCurrency)
+            .mapNotNull(::resultRowToEntity)
             .singleOrNull()
     }
+
+    override suspend fun getAll() = emptyList<Currency>()
 
 }

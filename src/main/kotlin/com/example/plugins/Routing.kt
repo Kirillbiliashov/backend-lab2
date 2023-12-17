@@ -122,7 +122,7 @@ fun Routing.currencyRouting() {
         if (id <= 2) call.respond(HttpStatusCode.BadRequest, "Can't delete default currency")
         else {
             currenciesDao.delete(id)
-            call.respond(HttpStatusCode.NoContent, "category $id successfully deleted")
+            call.respond(HttpStatusCode.NoContent)
         }
     }
     post("/currency") {

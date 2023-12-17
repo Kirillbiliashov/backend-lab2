@@ -4,6 +4,7 @@ import com.example.db.orm.Categories
 import com.example.db.orm.Currencies
 import com.example.db.orm.Expenses
 import com.example.db.orm.Users
+import com.typesafe.config.ConfigFactory
 import kotlinx.coroutines.Dispatchers
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils

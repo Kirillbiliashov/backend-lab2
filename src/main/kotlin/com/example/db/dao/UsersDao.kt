@@ -9,19 +9,10 @@ import com.example.model.User
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 
-interface UsersDao {
-    suspend fun insert(user: User): Int
 
-    suspend fun delete(id: Int)
+class UsersDaoImpl : Dao<User> {
 
-    suspend fun get(id: Int): User?
-
-    suspend fun  getAll(): List<User>
-}
-
-class UsersDaoImpl : UsersDao {
-
-    private fun resultRowToUser(row: ResultRow): User = User(
+    override fun resultRowToEntity(row: ResultRow): User = User(
         id = row[Users.id],
         name = row[Users.name],
         currencyId = row[Users.currencyId]
@@ -42,12 +33,12 @@ class UsersDaoImpl : UsersDao {
 
     override suspend fun get(id: Int) = dbQuery {
         Users.select { Users.id eq id }
-            .mapNotNull(::resultRowToUser)
+            .mapNotNull(::resultRowToEntity)
             .singleOrNull()
     }
 
     override suspend fun getAll() = dbQuery {
-        Users.selectAll().map(::resultRowToUser)
+        Users.selectAll().map(::resultRowToEntity)
     }
 
 }
