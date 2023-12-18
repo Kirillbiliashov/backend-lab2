@@ -13,9 +13,8 @@ import org.jetbrains.exposed.sql.transactions.transaction
 
 object DbSingleton {
     fun init() {
-        val driver = "com.mysql.cj.jdbc.Driver"
-        val url = "jdbc:mysql://localhost:3306/BackendLabs"
-        val database = Database.connect(url, driver, "root", "root")
+        val driver = "org.postgresql.Driver"
+        val database = Database.connect(System.getenv("dbUrl"), driver)
         transaction(database) {
             SchemaUtils.create(Currencies)
             SchemaUtils.create(Users)
