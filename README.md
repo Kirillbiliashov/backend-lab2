@@ -6,5 +6,5 @@ Perofrm the same steps as in [lab1](https://github.com/Kirillbiliashov/backend-l
 ``` https://backend-lab2-kb6o.onrender.com ```
 
 # backend-lab3
-### the same config as in previous labs
+### the same config as in previous labs (deployed url stays the same too)
 ### Additional task: group IM13, variant 13 % 3 = 1. Add currency entity.
