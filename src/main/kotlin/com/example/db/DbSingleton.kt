@@ -1,9 +1,6 @@
 package com.example.db
 
-import com.example.db.orm.Categories
-import com.example.db.orm.Currencies
-import com.example.db.orm.Expenses
-import com.example.db.orm.Users
+import com.example.db.orm.*
 import com.typesafe.config.ConfigFactory
 import kotlinx.coroutines.Dispatchers
 import org.jetbrains.exposed.sql.Database
@@ -25,6 +22,7 @@ object DbSingleton {
             SchemaUtils.create(Users)
             SchemaUtils.create(Categories)
             SchemaUtils.create(Expenses)
+            SchemaUtils.create(UsersCredentials)
         }
     }
 
