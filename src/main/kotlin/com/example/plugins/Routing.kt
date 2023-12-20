@@ -2,6 +2,7 @@ package com.example.plugins
 
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
+import com.auth0.jwt.exceptions.TokenExpiredException
 import com.example.db.dao.*
 import com.example.model.*
 import com.example.model.Currency
@@ -31,15 +32,26 @@ private val usersCredentialsDao = UsersCredentialsDaoImpl()
 fun Application.configureRouting() {
     install(Authentication) {
         jwt("app-validation") {
-            verifier(JWT
-                .require(Algorithm.HMAC256(System.getenv("secretKey")))
-                .withIssuer("backend-lab4")
-                .build())
+            challenge { defaultScheme, realm ->
+                val message = if (call.request.headers.contains("Authorization")) {
+                    "Missing auth token"
+                } else {
+                    "Auth token is not valid or has expired"
+                }
+                call.respond(HttpStatusCode.Unauthorized, message)
+            }
+            verifier(
+                JWT
+                    .require(Algorithm.HMAC256(System.getenv("secretKey")))
+                    .withIssuer("backend-lab4")
+                    .build()
+            )
             validate {
                 val username = it.payload.getClaim("username").asString()
                 val password = it.payload.getClaim("password").asString()
                 if (username != null && password != null &&
-                    usersCredentialsDao.exists(UserCredentials(username, password))) {
+                    usersCredentialsDao.exists(UserCredentials(username, password))
+                ) {
                     JWTPrincipal(it.payload)
                 } else {
                     null
@@ -81,6 +93,13 @@ fun Application.configureRouting() {
             if (reasons.isNotEmpty()) ValidationResult.Invalid(reasons)
             else ValidationResult.Valid
         }
+        validate<UserCredentials> { credentials ->
+            val reasons = mutableListOf<String>()
+            if (credentials.username.length < 6) reasons.add("Username should be at least 6 symbols long")
+            if (credentials.password.length < 6) reasons.add("Password should be at least 6 symbols long")
+            if (reasons.isNotEmpty()) ValidationResult.Invalid(reasons)
+            else ValidationResult.Valid
+        }
     }
     install(StatusPages) {
         exception<RequestValidationException> { call, cause ->
@@ -89,6 +108,7 @@ fun Application.configureRouting() {
         exception<java.lang.NumberFormatException> { call, cause ->
             call.respond(HttpStatusCode.UnprocessableEntity, "id should be valid int")
         }
+
     }
 }
 
